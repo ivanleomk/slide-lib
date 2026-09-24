@@ -1,0 +1,20 @@
+{
+  "name": "minimal-deck",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "export:pptx": "slide-lib export --url http://localhost:5173 --out deck.pptx"
+  },
+  "dependencies": {
+    "@mdx-js/react": "^3.1.1",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "slide-lib": "^0.1.0"
+  },
+  "devDependencies": {
+    "vite": "^8.0.1"
+  }
+}

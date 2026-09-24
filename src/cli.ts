@@ -2,6 +2,7 @@
 import process from "node:process";
 import { exportDeckToPptx } from "./export/export-pptx.ts";
 import { importPptxToMdx } from "./import/mdx-emitter.ts";
+import { scaffoldSlideDeck } from "./scaffold/init.ts";
 
 function parseArgs(argv: string[]): { positional: string[]; flags: Record<string, string> } {
 	const positional: string[] = [];
@@ -27,6 +28,15 @@ function parseArgs(argv: string[]): { positional: string[]; flags: Record<string
 export async function runCli(argv: string[] = process.argv.slice(2)): Promise<void> {
 	const [command, ...rest] = argv;
 	const { positional, flags } = parseArgs(rest);
+
+	if (command === "init") {
+		const targetDir = positional[0] ?? flags.dir ?? "./slides";
+		const title = flags.title ?? "Slide Deck";
+		const theme =
+			flags.theme === "studio-light" ? "studio-light" : "warm-paper";
+		scaffoldSlideDeck({ targetDir, title, theme });
+		return;
+	}
 
 	if (command === "export") {
 		const url = flags.url ?? "http://localhost:5173";
@@ -61,7 +71,7 @@ export async function runCli(argv: string[] = process.argv.slice(2)): Promise<vo
 	}
 
 	throw new Error(
-		`Unknown command "${command ?? ""}". Usage: slide-lib <export|import>`,
+		`Unknown command "${command ?? ""}". Usage: slide-lib <init|export|import>`,
 	);
 }
 
