@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 import process from "node:process";
 import { exportDeckToPptx } from "./export/export-pptx.ts";
+import { importPptxToMdx } from "./import/mdx-emitter.ts";
 
-function parseArgs(argv: string[]): Record<string, string> {
+function parseArgs(argv: string[]): { positional: string[]; flags: Record<string, string> } {
+	const positional: string[] = [];
 	const flags: Record<string, string> = {};
 	for (let i = 0; i < argv.length; i++) {
 		const arg = argv[i];
@@ -15,14 +17,16 @@ function parseArgs(argv: string[]): Record<string, string> {
 			} else {
 				flags[key] = "true";
 			}
+		} else {
+			positional.push(arg);
 		}
 	}
-	return flags;
+	return { positional, flags };
 }
 
 export async function runCli(argv: string[] = process.argv.slice(2)): Promise<void> {
 	const [command, ...rest] = argv;
-	const flags = parseArgs(rest);
+	const { positional, flags } = parseArgs(rest);
 
 	if (command === "export") {
 		const url = flags.url ?? "http://localhost:5173";
@@ -35,8 +39,29 @@ export async function runCli(argv: string[] = process.argv.slice(2)): Promise<vo
 		return;
 	}
 
+	if (command === "import") {
+		const pptxPath = positional[0] ?? flags.file;
+		if (!pptxPath) {
+			throw new Error("Missing .pptx path. Usage: slide-lib import <deck.pptx> --out <dir> [--exact]");
+		}
+		const outDir = flags.out ?? ".";
+		const isExact = flags.exact === "true" || flags.mode === "exact";
+		await importPptxToMdx({
+			pptxPath,
+			outDir,
+			mode: isExact
+				? { mode: "exact", preserveFonts: true }
+				: {
+						mode: "semantic",
+						theme:
+							flags.theme === "studio-light" ? "studio-light" : "warm-paper",
+					},
+		});
+		return;
+	}
+
 	throw new Error(
-		`Unknown command "${command ?? ""}". Usage: slide-lib export --url <http://localhost:5173> --out <deck.pptx>`,
+		`Unknown command "${command ?? ""}". Usage: slide-lib <export|import>`,
 	);
 }
 
