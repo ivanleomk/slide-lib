@@ -53,3 +53,49 @@ export {
 } from "./components/CodeCard.tsx";
 
 export { Clip } from "./components/Clip.tsx";
+
+export {
+	PPTX_HEIGHT_INCHES,
+	PPTX_WIDTH_INCHES,
+	STAGE_HEIGHT_PX,
+	STAGE_WIDTH_PX,
+	normalizeCssColor,
+	normalizeFontFamily,
+	pxToInchesX,
+	pxToInchesY,
+	pxToPt,
+	type NormalizedColor,
+} from "./export/color.ts";
+
+export {
+	BoundingBoxSchema,
+	ExtractedDeckSchema,
+	ExtractedElementSchema,
+	ExtractedImageSchema,
+	ExtractedShapeSchema,
+	ExtractedSlideSchema,
+	ExtractedTextBlockSchema,
+	ExtractedTextRunSchema,
+	buildBrowserDomExtractorScript,
+	type BoundingBox,
+	type ExtractedDeck,
+	type ExtractedElement,
+	type ExtractedImage,
+	type ExtractedShape,
+	type ExtractedSlide,
+	type ExtractedTextBlock,
+	type ExtractedTextRun,
+} from "./export/dom-walker.ts";
+
+export {
+	addExtractedSlideToPptx,
+	buildPptxBuffer,
+} from "./export/pptx-builder.ts";
+
+export {
+	ExportPptxConfigSchema,
+	exportDeckToPptx,
+	extractDeckFromUrl,
+	launchSlideBrowser,
+	type ExportPptxConfig,
+} from "./export/export-pptx.ts";
