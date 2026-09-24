@@ -1,0 +1,53 @@
+{
+  "name": "slide-lib",
+  "version": "0.1.0",
+  "description": "Extensible Vite + MDX slide engine and bidirectional HTML <-> editable PPTX pipeline",
+  "type": "module",
+  "bin": {
+    "slide-lib": "./dist/cli.js"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./vite": "./src/vite.ts",
+    "./styles.css": "./src/styles/base.css",
+    "./themes.css": "./src/styles/themes.css"
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "test": "vitest run",
+    "generate:mocks": "tsx scripts/generate-mocks.ts"
+  },
+  "dependencies": {
+    "@mdx-js/react": "^3.1.1",
+    "@mdx-js/rollup": "^3.1.1",
+    "@shikijs/rehype": "^4.0.2",
+    "@tailwindcss/vite": "^4.2.2",
+    "@vitejs/plugin-react": "^6.0.1",
+    "culori": "^4.0.2",
+    "fast-xml-parser": "^5.2.0",
+    "jszip": "^3.10.1",
+    "katex": "^0.16.45",
+    "playwright": "^1.51.0",
+    "pptxgenjs": "^3.12.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "remark-frontmatter": "^5.0.0",
+    "remark-mdx-frontmatter": "^5.2.0",
+    "shiki": "^4.0.2",
+    "tailwindcss": "^4.2.2",
+    "vite": "^8.0.1",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.2.0",
+    "@types/culori": "^4.0.1",
+    "@types/katex": "^0.16.7",
+    "@types/node": "^24.12.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "jsdom": "^26.0.0",
+    "tsx": "^4.19.3",
+    "typescript": "~5.9.3",
+    "vitest": "^3.0.8"
+  }
+}
