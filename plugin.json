@@ -1,0 +1,10 @@
+{
+  "name": "slide-lib",
+  "description": "Author, scaffold, and convert Vite + MDX slide decks with bidirectional HTML <-> editable PPTX pipelines.",
+  "logo": "ph-presentation-chart",
+  "suggestedPrompts": [
+    "Scaffold a new slide-lib deck in ./slides with the warm-paper theme",
+    "Export the running slide deck at http://localhost:5173 to an editable .pptx file",
+    "Import ./talk.pptx into MDX slides using slide-lib semantic layout primitives"
+  ]
+}

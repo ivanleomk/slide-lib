@@ -130,3 +130,9 @@ export {
 	importPptxToMdx,
 	type ImportPptxConfig,
 } from "./import/mdx-emitter.ts";
+
+export {
+	ScaffoldDeckConfigSchema,
+	scaffoldSlideDeck,
+	type ScaffoldDeckConfig,
+} from "./scaffold/init.ts";

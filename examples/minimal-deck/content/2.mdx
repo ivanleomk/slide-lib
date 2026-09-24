@@ -1,0 +1,14 @@
+---
+title: "Architecture & Code"
+layout: "default"
+notes: "Walk through the side-by-side context grid."
+---
+
+# Side-by-side *context* and code
+
+<ContextGrid>
+  <div>
+    Every slide renders on a deterministic 1920x1080 stage and exports directly to native OpenXML text and shapes.
+  </div>
+  <CodeCard label="example.ts" lang="typescript" code={`import { slideDeckPlugin } from "slide-lib/vite";\nexport default { plugins: [slideDeckPlugin()] };`} />
+</ContextGrid>
