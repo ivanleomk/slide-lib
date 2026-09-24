@@ -99,3 +99,34 @@ export {
 	launchSlideBrowser,
 	type ExportPptxConfig,
 } from "./export/export-pptx.ts";
+
+export {
+	PptxPictureSchema,
+	PptxSlideRecordSchema,
+	PptxTextBoxSchema,
+	PptxTextRunSchema,
+	readPptxArchive,
+	type PptxPicture,
+	type PptxSlideRecord,
+	type PptxTextBox,
+	type PptxTextRun,
+} from "./import/pptx-reader.ts";
+
+export {
+	ClassifiedSlideSchema,
+	ImportModeSchema,
+	SemanticBodyBlockSchema,
+	classifyPptxSlide,
+	runsToMarkdown,
+	runsToPlainText,
+	type ClassifiedSlide,
+	type ImportMode,
+	type SemanticBodyBlock,
+} from "./import/layout-classifier.ts";
+
+export {
+	ImportPptxConfigSchema,
+	emitSlideMdx,
+	importPptxToMdx,
+	type ImportPptxConfig,
+} from "./import/mdx-emitter.ts";
