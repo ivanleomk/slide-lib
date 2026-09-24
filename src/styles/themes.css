@@ -1,0 +1,29 @@
+:root,
+[data-theme="warm-paper"] {
+	--bg: #faf8f3;
+	--surface: #f2efe7;
+	--ink: #37352f;
+	--muted: #6f6c64;
+	--line: rgb(55 53 47 / 0.14);
+	--mark: #f4e39a;
+	--accent: #b5522f;
+	--font-serif:
+		"Newsreader", "Iowan Old Style", "Apple Garamond", "Baskerville", "Georgia",
+		serif;
+	--font-sans:
+		ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+		sans-serif;
+	--font-mono:
+		"SF Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas,
+		monospace;
+}
+
+[data-theme="studio-light"] {
+	--bg: #ffffff;
+	--surface: #f7f4ec;
+	--ink: #282828;
+	--muted: #6e6b63;
+	--line: rgb(40 40 40 / 0.14);
+	--mark: #f4e39a;
+	--accent: #b5522f;
+}
