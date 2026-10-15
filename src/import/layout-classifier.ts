@@ -108,7 +108,7 @@ export function classifyPptxSlide(
 	);
 
 	const headingCandidate = sortedBoxes.find((b) =>
-		b.runs.some((r) => r.fontSizePt >= 32),
+		b.runs.some((r) => r.fontSizePt >= 24),
 	);
 	const titlePlain = headingCandidate
 		? runsToPlainText(headingCandidate)

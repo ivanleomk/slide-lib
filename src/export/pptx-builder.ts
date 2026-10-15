@@ -379,6 +379,7 @@ export function addExtractedSlideToPptx(
 				y,
 				w,
 				h,
+				rounding: element.rounded || undefined,
 			});
 		}
 	}

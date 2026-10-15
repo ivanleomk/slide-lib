@@ -50,6 +50,7 @@ export const ExtractedImageSchema = z.object({
 	bbox: BoundingBoxSchema,
 	src: z.string().min(1),
 	isRasterIsland: z.boolean().default(false),
+	rounded: z.boolean().default(false),
 	label: z.string().optional(),
 });
 
@@ -103,8 +104,11 @@ export function buildBrowserDomExtractorScript(): string {
 		const rasterRoots = Array.from(stage.querySelectorAll('[data-pptx="raster"]'));
 		const isInsideRaster = (node) => rasterRoots.some((r) => r.contains(node));
 
+		const accentVar =
+			window.getComputedStyle(stage).getPropertyValue("--accent").trim() || "#b5522f";
+
 		const cardElements = Array.from(
-			stage.querySelectorAll('[data-pptx-card], .code-card, .callout-box, .capability-col, .concept-card')
+			stage.querySelectorAll('[data-pptx-card], .code-card, .callout-box, .capability-col, .concept-card, .capability-map, .concept-grid, .section-index, .section-index li')
 		);
 		for (const el of cardElements) {
 			if (isInsideRaster(el)) continue;
@@ -113,12 +117,20 @@ export function buildBrowserDomExtractorScript(): string {
 			const cs = window.getComputedStyle(el);
 			const bg = cs.backgroundColor;
 			const borderTopWidth = Number.parseFloat(cs.borderTopWidth) || 0;
+			const borderBottomWidth = Number.parseFloat(cs.borderBottomWidth) || 0;
 			const borderLeftWidth = Number.parseFloat(cs.borderLeftWidth) || 0;
+			const borderRightWidth = Number.parseFloat(cs.borderRightWidth) || 0;
 			const hasBg = bg && bg !== "rgba(0, 0, 0, 0)" && bg !== "transparent";
-			if (hasBg || borderTopWidth > 0) {
+			const isBoxBorder =
+				borderTopWidth > 0 &&
+				borderBottomWidth > 0 &&
+				borderLeftWidth > 0 &&
+				borderRightWidth > 0;
+			const box = relBox(rect);
+			if (hasBg || isBoxBorder) {
 				elements.push({
 					kind: "shape",
-					bbox: relBox(rect),
+					bbox: box,
 					fillColor: hasBg ? bg : null,
 					borderColor: borderTopWidth > 0 ? cs.borderTopColor : null,
 					borderWidthPx: borderTopWidth,
@@ -126,17 +138,48 @@ export function buildBrowserDomExtractorScript(): string {
 					rotateDeg: 0,
 					role: el.getAttribute("data-pptx-card") || "card",
 				});
-			} else if (borderLeftWidth > 0) {
-				elements.push({
-					kind: "shape",
-					bbox: { x: relBox(rect).x, y: relBox(rect).y, w: borderLeftWidth, h: relBox(rect).h },
-					fillColor: cs.borderLeftColor,
-					borderColor: null,
-					borderWidthPx: 0,
-					borderRadiusPx: 0,
-					rotateDeg: 0,
-					role: "divider",
-				});
+			} else {
+				if (borderTopWidth > 0) {
+					elements.push({
+						kind: "shape",
+						bbox: { x: box.x, y: box.y, w: box.w, h: borderTopWidth },
+						fillColor: cs.borderTopColor,
+						borderColor: null,
+						borderWidthPx: 0,
+						borderRadiusPx: 0,
+						rotateDeg: 0,
+						role: "divider",
+					});
+				}
+				if (borderBottomWidth > 0) {
+					elements.push({
+						kind: "shape",
+						bbox: {
+							x: box.x,
+							y: Math.round((box.y + box.h - borderBottomWidth) * 10) / 10,
+							w: box.w,
+							h: borderBottomWidth,
+						},
+						fillColor: cs.borderBottomColor,
+						borderColor: null,
+						borderWidthPx: 0,
+						borderRadiusPx: 0,
+						rotateDeg: 0,
+						role: "divider",
+					});
+				}
+				if (borderLeftWidth > 0) {
+					elements.push({
+						kind: "shape",
+						bbox: { x: box.x, y: box.y, w: borderLeftWidth, h: box.h },
+						fillColor: cs.borderLeftColor,
+						borderColor: null,
+						borderWidthPx: 0,
+						borderRadiusPx: 0,
+						rotateDeg: 0,
+						role: "divider",
+					});
+				}
 			}
 		}
 
@@ -182,6 +225,47 @@ export function buildBrowserDomExtractorScript(): string {
 			if (runs.length > 0) {
 				const rawBox = relBox(rect);
 				const fontSizePx = Number.parseFloat(blockStyle.fontSize) || 24;
+				if (block.matches(".section-index li") && block.parentElement) {
+					const siblings = Array.from(block.parentElement.children).filter(
+						(c) => c.tagName === "LI",
+					);
+					const liIdx = siblings.indexOf(block) + 1;
+					if (liIdx > 0) {
+						runs.unshift({
+							text: String(liIdx).padStart(2, "0") + "   ",
+							color: block.classList.contains("is-active")
+								? accentVar
+								: "rgb(111, 108, 100)",
+							fontFamily: "JetBrains Mono",
+							fontSizePx: 14,
+							bold: false,
+							italic: false,
+							isCode: false,
+						});
+					}
+				}
+				if (block.matches(".capability-col li")) {
+					const liPadL = Number.parseFloat(blockStyle.paddingLeft) || 0;
+					if (liPadL > 0) {
+						elements.push({
+							kind: "shape",
+							bbox: {
+								x: rawBox.x,
+								y: Math.round((rawBox.y + fontSizePx * 0.65) * 10) / 10,
+								w: 9,
+								h: 1.5,
+							},
+							fillColor: accentVar,
+							borderColor: null,
+							borderWidthPx: 0,
+							borderRadiusPx: 0,
+							rotateDeg: 0,
+							role: "divider",
+						});
+						rawBox.x = Math.round((rawBox.x + liPadL) * 10) / 10;
+						rawBox.w = Math.max(10, Math.round((rawBox.w - liPadL) * 10) / 10);
+					}
+				}
 				const lineHeightPx =
 					Number.parseFloat(blockStyle.lineHeight) ||
 					Math.round(fontSizePx * 1.3 * 10) / 10;
@@ -266,8 +350,6 @@ export function buildBrowserDomExtractorScript(): string {
 				);
 				const rectsToUse =
 					clientRects.length > 0 ? clientRects : [em.getBoundingClientRect()];
-				const accentVar =
-					window.getComputedStyle(stage).getPropertyValue("--accent").trim() || "#b5522f";
 				for (const emRect of rectsToUse) {
 					if (emRect.width < 2) continue;
 					const barHeight = Math.max(3, Math.round(emRect.height * 0.08 * 10) / 10);
@@ -276,7 +358,7 @@ export function buildBrowserDomExtractorScript(): string {
 						kind: "shape",
 						bbox: {
 							x: emRel.x,
-							y: Math.round((emRel.y + emRel.h - barHeight * 0.3) * 10) / 10,
+							y: Math.round((emRel.y + emRel.h + barHeight * 0.35) * 10) / 10,
 							w: emRel.w,
 							h: barHeight,
 						},
@@ -298,11 +380,18 @@ export function buildBrowserDomExtractorScript(): string {
 			if (rect.width < 2 || rect.height < 2) continue;
 			const src = img.currentSrc || img.getAttribute("src") || "";
 			if (!src) continue;
+			const imgCs = window.getComputedStyle(img);
+			const rawRadius = imgCs.borderTopLeftRadius || "0";
+			const bRadius = Number.parseFloat(rawRadius) || 0;
+			const isCircular = rawRadius.includes("%")
+				? bRadius >= 40
+				: bRadius >= Math.min(rect.width, rect.height) * 0.4;
 			elements.push({
 				kind: "image",
 				bbox: relBox(rect),
 				src,
 				isRasterIsland: false,
+				rounded: isCircular,
 				label: img.getAttribute("alt") || undefined,
 			});
 		}

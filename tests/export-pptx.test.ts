@@ -53,15 +53,15 @@ describe("Color and coordinate normalization for Google Slides / PowerPoint", ()
 	test.each([
 		{
 			px: { x: 1920, y: 1080, font: 68 },
-			expected: { xIn: 13.333, yIn: 7.5, pt: 51 },
+			expected: { xIn: 13.333, yIn: 7.5, pt: 34 },
 		},
 		{
 			px: { x: 128, y: 84, font: 28 },
-			expected: { xIn: 0.889, yIn: 0.583, pt: 21 },
+			expected: { xIn: 0.889, yIn: 0.583, pt: 14 },
 		},
 		{
 			px: { x: 960, y: 540, font: 16 },
-			expected: { xIn: 6.667, yIn: 3.75, pt: 12 },
+			expected: { xIn: 6.667, yIn: 3.75, pt: 8 },
 		},
 	])(
 		"maps 1920x1080 stage coordinates $px to 16:9 widescreen inches and points",
@@ -329,7 +329,7 @@ describe("HTML -> PPTX builder from recorded Playwright DOM extraction fixtures"
 		const zip = await JSZip.loadAsync(pptxBuf);
 		const slide1Xml = await zip.file("ppt/slides/slide1.xml")!.async("string");
 		const pPrCountInSlide1 = (slide1Xml.match(/<a:pPr\b/g) ?? []).length;
-		const hasLineSpacing = /<a:lnSpc><a:spcPts val="5510"\/><\/a:lnSpc>/.test(
+		const hasLineSpacing = /<a:lnSpc><a:spcPts val="3670"\/><\/a:lnSpc>/.test(
 			slide1Xml,
 		);
 		const hasSerifPitchFamily =

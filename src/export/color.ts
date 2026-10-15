@@ -83,5 +83,6 @@ export function pxToInchesY(px: number): number {
 }
 
 export function pxToPt(px: number): number {
-	return Math.round(px * 0.75 * 10) / 10;
+	const ptPerStagePx = (PPTX_HEIGHT_INCHES * 72) / STAGE_HEIGHT_PX;
+	return Math.round(px * ptPerStagePx * 10) / 10;
 }
