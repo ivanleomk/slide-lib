@@ -186,6 +186,31 @@ export async function exportDeckToPptx(
 				} catch {
 					// ignore fetch errors
 				}
+			} else if (el.kind === "video") {
+				if (!el.src.includes(";base64,")) {
+					try {
+						const res = await fetch(el.src);
+						if (res.ok) {
+							const buf = Buffer.from(await res.arrayBuffer());
+							const mime = res.headers.get("content-type") || "video/mp4";
+							el.src = `${mime};base64,${buf.toString("base64")}`;
+						}
+					} catch {
+						// ignore fetch errors
+					}
+				}
+				if (el.poster && !el.poster.startsWith("data:")) {
+					try {
+						const res = await fetch(el.poster);
+						if (res.ok) {
+							const buf = Buffer.from(await res.arrayBuffer());
+							const mime = res.headers.get("content-type") || "image/jpeg";
+							el.poster = `data:${mime};base64,${buf.toString("base64")}`;
+						}
+					} catch {
+						// ignore fetch errors
+					}
+				}
 			}
 		}
 	}

@@ -381,6 +381,21 @@ export function addExtractedSlideToPptx(
 				h,
 				rounding: element.rounded || undefined,
 			});
+			continue;
+		}
+
+		if (element.kind === "video") {
+			const isBase64 = element.src.includes(";base64,");
+			slide.addMedia({
+				type: "video",
+				...(isBase64 ? { data: element.src } : { path: element.src }),
+				...(element.poster ? { cover: element.poster } : {}),
+				extn: "mp4",
+				x,
+				y,
+				w,
+				h,
+			});
 		}
 	}
 }

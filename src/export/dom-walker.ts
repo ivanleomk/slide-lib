@@ -56,10 +56,22 @@ export const ExtractedImageSchema = z.object({
 
 export type ExtractedImage = z.infer<typeof ExtractedImageSchema>;
 
+export const ExtractedVideoSchema = z.object({
+	kind: z.literal("video"),
+	bbox: BoundingBoxSchema,
+	src: z.string().min(1),
+	videoPath: z.string().optional(),
+	poster: z.string().optional(),
+	label: z.string().optional(),
+});
+
+export type ExtractedVideo = z.infer<typeof ExtractedVideoSchema>;
+
 export const ExtractedElementSchema = z.discriminatedUnion("kind", [
 	ExtractedShapeSchema,
 	ExtractedTextBlockSchema,
 	ExtractedImageSchema,
+	ExtractedVideoSchema,
 ]);
 
 export type ExtractedElement = z.infer<typeof ExtractedElementSchema>;
@@ -406,6 +418,35 @@ export function buildBrowserDomExtractorScript(): string {
 				src: "__raster_island_" + idx + "__",
 				isRasterIsland: true,
 				label: island.getAttribute("aria-label") || undefined,
+			});
+		}
+
+		const videoNodes = Array.from(stage.querySelectorAll("video, [data-pptx-video]"));
+		for (const vid of videoNodes) {
+			const rect = vid.getBoundingClientRect();
+			if (rect.width < 2 || rect.height < 2) continue;
+			const rawVideoSrc =
+				vid.getAttribute("data-pptx-video") ||
+				vid.currentSrc ||
+				vid.getAttribute("src") ||
+				(vid.querySelector("source") && vid.querySelector("source").getAttribute("src")) ||
+				"";
+			if (!rawVideoSrc) continue;
+			const resolvedSrc = new URL(rawVideoSrc, window.location.href).href;
+			const rawPoster =
+				vid.getAttribute("data-pptx-poster") ||
+				vid.getAttribute("poster") ||
+				"";
+			const resolvedPoster = rawPoster
+				? new URL(rawPoster, window.location.href).href
+				: undefined;
+			elements.push({
+				kind: "video",
+				bbox: relBox(rect),
+				src: resolvedSrc,
+				videoPath: rawVideoSrc,
+				poster: resolvedPoster,
+				label: vid.getAttribute("aria-label") || undefined,
 			});
 		}
 
