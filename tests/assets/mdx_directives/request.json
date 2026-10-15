@@ -1,0 +1,14 @@
+[
+  {
+    "id": "capability-grid-5",
+    "mdx": "# Inspecting *65 industry benchmarks*\n\n:::grid\n## × phone-a-friend\n### Calling a smarter model\nModels found API keys.\n\n## × grader-tampering\n### Editing the grading script\nModels modified the grader.\n:::\n\n::footer[Every one of these produced a score.]\n"
+  },
+  {
+    "id": "split-callouts-code",
+    "mdx": "# *HeyGen Code2Video* Bench\n\n::left{variant=\"shot\"}\n\n:::warning[Contamination]\n### 120 / 120 were contaminated\nEvery run showed prior knowledge.\n:::\n\n:::success[Customer Benchmark]\n### Co-designed with HeyGen\nHosted on Kaggle.\n:::\n\n::right::\n\n```python title=\"interactions.py\"\nclient.interactions.create(model=\"gemini-2.5-pro\")\n```\n"
+  },
+  {
+    "id": "concepts-and-stats",
+    "mdx": "# Why *Kaggle*?\n\n::::concepts\n## 15 years\n### Evaluating humans\n::stat[31M]{unit=\"+\" caption=\"AI & ML builders\"}\n\n## Since Feb 2026\n:::callout[Turnkey]\n### Free compute\n$5M in grants.\n:::\n::::\n"
+  }
+]

@@ -2,9 +2,11 @@ import mdx from "@mdx-js/rollup";
 import rehypeShiki from "@shikijs/rehype";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
+import remarkDirective from "remark-directive";
 import remarkFrontmatter from "remark-frontmatter";
 import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import type { PluginOption } from "vite";
+import { remarkSlideDirectives } from "./mdx/remark-slide-directives.ts";
 import { DeckConfigSchema, type DeckConfig } from "./schemas.ts";
 
 export function slideDeckPlugin(rawConfig: Partial<DeckConfig> = {}): PluginOption[] {
@@ -33,7 +35,7 @@ export function slideDeckPlugin(rawConfig: Partial<DeckConfig> = {}): PluginOpti
 			...mdx({
 				include: /\.mdx$/,
 				providerImportSource: "@mdx-js/react",
-				remarkPlugins: [remarkFrontmatter, remarkMdxFrontmatter],
+				remarkPlugins: [remarkFrontmatter, remarkMdxFrontmatter, remarkDirective, remarkSlideDirectives],
 				rehypePlugins: [
 					[
 						rehypeShiki,

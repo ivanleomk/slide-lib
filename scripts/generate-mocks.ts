@@ -1,7 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
+import { compile } from "@mdx-js/mdx";
 import type { ElementHandle } from "playwright";
+import remarkDirective from "remark-directive";
+import remarkFrontmatter from "remark-frontmatter";
+import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import { STAGE_HEIGHT_PX, STAGE_WIDTH_PX } from "../src/export/color.ts";
+import { remarkSlideDirectives } from "../src/mdx/remark-slide-directives.ts";
 import {
 	ExtractedDeckSchema,
 	ExtractedSlideSchema,
@@ -158,6 +163,20 @@ async function main() {
 	} finally {
 		await browser.close();
 	}
+
+	const mdxDir = path.resolve("tests/assets/mdx_directives");
+	const mdxRequests = JSON.parse(fs.readFileSync(path.join(mdxDir, "request.json"), "utf8")) as { id: string; mdx: string }[];
+	const mdxResponses = await Promise.all(
+		mdxRequests.map(async ({ id, mdx }) => {
+			const compiled = await compile(mdx, {
+				outputFormat: "function-body",
+				providerImportSource: "@mdx-js/react",
+				remarkPlugins: [remarkFrontmatter, remarkMdxFrontmatter, remarkDirective, remarkSlideDirectives],
+			});
+			return JSON.stringify({ id, code: String(compiled) });
+		}),
+	);
+	fs.writeFileSync(path.join(mdxDir, "response.jsonl"), `${mdxResponses.join("\n")}\n`);
 }
 
 main();
