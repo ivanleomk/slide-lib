@@ -10,3 +10,8 @@ All fixtures in `tests/assets/` are captured from real headless Chrome (`1920×1
 ## `pptx_roundtrip/`
 
 - `sample_deck.pptx`: Binary OpenXML `.pptx` presentation generated from `dom_extraction/response.jsonl` via `buildPptxBuffer`, used to verify both editable OpenXML generation (`tests/export-pptx.test.ts`) and `PPTX → MDX` semantic/exact import round-tripping (`tests/import-pptx.test.ts`).
+
+## `mdx_directives/`
+
+- `request.json`: Declarative Markdown slide inputs (`:::grid`, `::::concepts`, `:::callout`/`:::warning`/`:::success`, `::left`/`::right::` Slidev slot splits, fenced code cards, `::stat`, and `::footer`).
+- `response.jsonl`: Compiled `@mdx-js/mdx` function bodies produced by `remarkDirective` + `remarkSlideDirectives`, used by `tests/directives.test.tsx` to verify exact AST-to-JSX lowering and DOM `data-pptx-*` parity.

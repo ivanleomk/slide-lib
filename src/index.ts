@@ -27,6 +27,8 @@ export {
 	type ExportMode,
 } from "./deck/Deck.tsx";
 
+export { remarkSlideDirectives, type MdastNode, type MdxJsxAttribute } from "./mdx/remark-slide-directives.ts";
+
 export { Slide, type SlideProps } from "./deck/Slide.tsx";
 export { Em } from "./deck/Em.tsx";
 
