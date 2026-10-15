@@ -37,17 +37,17 @@ body,
 	width: 100vw;
 	height: 100dvh;
 	overflow: hidden;
-	display: grid;
-	place-items: center;
 	background: var(--bg);
 }
 
 .deck-viewport {
+	position: absolute;
+	top: 50%;
+	left: 50%;
 	width: 1920px;
 	height: 1080px;
-	transform: scale(var(--stage-scale, 1));
+	transform: translate(-50%, -50%) scale(var(--stage-scale, 1));
 	transform-origin: center center;
-	flex-shrink: 0;
 }
 
 .deck-slide {
@@ -239,6 +239,61 @@ body,
 	color: var(--ink);
 }
 
+.capability-col h3,
+.concept-card h3 {
+	margin: 0;
+	font-size: 28px;
+	line-height: 1.2;
+	font-weight: 500;
+	letter-spacing: -0.01em;
+	color: var(--ink);
+}
+
+.capability-col p,
+.capability-col .capability-summary {
+	margin: 4px 0 0;
+	font-size: 20px;
+	line-height: 1.42;
+	color: var(--muted);
+	max-width: none;
+}
+
+.capability-map:not(.is-two):not(.is-three):not(.is-four) .capability-col h3 {
+	font-size: 23px;
+}
+
+.capability-map:not(.is-two):not(.is-three):not(.is-four) .capability-col p,
+.capability-map:not(.is-two):not(.is-three):not(.is-four) .capability-col .capability-summary {
+	font-size: 18px;
+}
+
+.capability-col ul {
+	margin: 12px 0 0;
+	padding: 0;
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.capability-col li {
+	position: relative;
+	padding-left: 20px;
+	font-size: 19px;
+	line-height: 1.38;
+	color: var(--muted);
+}
+
+.capability-col li::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 0.65em;
+	width: 9px;
+	height: 1.5px;
+	background: var(--accent);
+}
+
 .concept-grid {
 	margin-top: 36px;
 	display: grid;
@@ -262,6 +317,22 @@ body,
 	letter-spacing: 0.08em;
 	color: var(--accent);
 	margin-bottom: 10px;
+}
+
+.concept-card .concept-copy,
+.concept-card > p {
+	margin: 10px 0 0;
+	font-size: 22px;
+	line-height: 1.42;
+	color: var(--muted);
+	max-width: none;
+}
+
+.slide-footer-note {
+	margin-top: 32px;
+	font-size: 22px;
+	color: var(--muted);
+	max-width: none;
 }
 
 .section-index {

@@ -22,6 +22,7 @@ export {
 	Deck,
 	STAGE_HEIGHT,
 	STAGE_WIDTH,
+	slideMdxComponents,
 	useSlideFinalState,
 	type DeckProps,
 	type ExportMode,

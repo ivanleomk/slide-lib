@@ -1,3 +1,4 @@
+import { MDXProvider } from "@mdx-js/react";
 import {
 	Children,
 	createContext,
@@ -7,9 +8,16 @@ import {
 	useLayoutEffect,
 	useRef,
 	useState,
+	type ComponentType,
 	type ReactNode,
 } from "react";
+import { Clip } from "../components/Clip.tsx";
+import { CodeCard } from "../components/CodeCard.tsx";
+import * as Primitives from "../components/primitives.tsx";
 import type { DeckTheme } from "../schemas.ts";
+import { Em } from "./Em.tsx";
+
+export const slideMdxComponents = { ...Primitives, CodeCard, Clip, em: Em };
 
 export const STAGE_WIDTH = 1920;
 export const STAGE_HEIGHT = 1080;
@@ -68,6 +76,7 @@ export interface DeckProps {
 	theme?: DeckTheme;
 	exportMode?: ExportMode;
 	initialSlide?: number;
+	components?: Record<string, ComponentType<never>>;
 }
 
 export function Deck({
@@ -76,6 +85,7 @@ export function Deck({
 	theme = "warm-paper",
 	exportMode: exportModeProp,
 	initialSlide,
+	components,
 }: DeckProps) {
 	const items = Children.toArray(children);
 	const total = items.length;
@@ -255,6 +265,11 @@ export function Deck({
 		return () => window.removeEventListener("keydown", onKeyDown);
 	}, [go, step, helpOpen, total, exportMode]);
 
+	const mergeComponents = useCallback(
+		(parent: Record<string, unknown>) => ({ ...slideMdxComponents, ...parent, ...components }),
+		[components],
+	);
+
 	if (exportMode === "all") {
 		return (
 			<SlideExportContext.Provider value={true}>
@@ -264,16 +279,18 @@ export function Deck({
 					data-export="true"
 					data-deck-ready={ready ? "true" : "false"}
 				>
-					{items.map((slideNode, idx) => (
-						<section
-							key={idx}
-							className="deck-slide is-export-frame"
-							data-slide-index={idx}
-							aria-label={`Slide ${idx + 1} of ${total}`}
-						>
-							{slideNode}
-						</section>
-					))}
+					<MDXProvider components={mergeComponents}>
+						{items.map((slideNode, idx) => (
+							<section
+								key={idx}
+								className="deck-slide is-export-frame"
+								data-slide-index={idx}
+								aria-label={`Slide ${idx + 1} of ${total}`}
+							>
+								{slideNode}
+							</section>
+						))}
+					</MDXProvider>
 				</main>
 			</SlideExportContext.Provider>
 		);
@@ -308,7 +325,7 @@ export function Deck({
 						aria-roledescription="slide"
 						aria-label={label}
 					>
-						{items[index]}
+						<MDXProvider components={mergeComponents}>{items[index]}</MDXProvider>
 					</section>
 				</div>
 

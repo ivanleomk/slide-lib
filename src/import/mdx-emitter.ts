@@ -12,25 +12,22 @@ import {
 } from "./layout-classifier.ts";
 import { readPptxArchive, type PptxSlideRecord } from "./pptx-reader.ts";
 
-function renderSemanticBlock(block: SemanticBodyBlock, indent = ""): string {
+function renderSemanticBlock(block: SemanticBodyBlock): string {
 	if (block.type === "paragraph") {
-		return `${indent}${block.markdown}`;
+		return block.markdown;
 	}
 	if (block.type === "image") {
-		return `${indent}<img src="${block.src}" alt="" />`;
+		return `<img src="${block.src}" alt="" />`;
 	}
 	if (block.type === "code-card") {
-		const labelProp = block.label ? ` label=${JSON.stringify(block.label)}` : "";
-		return `${indent}<CodeCard${labelProp} code={${JSON.stringify(block.code)}} />`;
+		const meta = block.label ? ` title=${JSON.stringify(block.label)}` : "";
+		return `\`\`\`python${meta}\n${block.code}\n\`\`\``;
 	}
 	if (block.type === "capability-map") {
-		const cardsMdx = block.cards
-			.map(
-				(c) =>
-					`${indent}  <CapabilityCard model=${JSON.stringify(c.model)} summary=${JSON.stringify(c.summary)} />`,
-			)
-			.join("\n");
-		return `${indent}<CapabilityMap cols={${block.cols}}>\n${cardsMdx}\n${indent}</CapabilityMap>`;
+		const cardsMd = block.cards
+			.map((c) => `## ${c.model}\n${c.summary}`)
+			.join("\n\n");
+		return `:::grid\n${cardsMd}\n:::`;
 	}
 	return "";
 }
@@ -73,23 +70,9 @@ export function emitSlideMdx(rawSlide: ClassifiedSlide): string {
 	}
 
 	if (slide.gridVariant === "context-grid") {
-		const leftContent = slide.leftBlocks
-			.map((b) => renderSemanticBlock(b, "    "))
-			.join("\n\n");
-		const rightContent = slide.rightBlocks
-			.map((b) => renderSemanticBlock(b, "    "))
-			.join("\n\n");
-		lines.push(
-			"<ContextGrid>",
-			"  <div>",
-			leftContent,
-			"  </div>",
-			"  <div>",
-			rightContent,
-			"  </div>",
-			"</ContextGrid>",
-			"",
-		);
+		const leftContent = slide.leftBlocks.map(renderSemanticBlock).join("\n\n");
+		const rightContent = slide.rightBlocks.map(renderSemanticBlock).join("\n\n");
+		lines.push(leftContent, "", "::right::", "", rightContent, "");
 	} else {
 		for (const block of slide.leftBlocks) {
 			lines.push(renderSemanticBlock(block), "");

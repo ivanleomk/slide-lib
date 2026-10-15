@@ -58,35 +58,24 @@ notes: "Speaker notes exported directly to PowerPoint / Google Slides notes."
 
 ---
 
-## 3. Semantic MDX Layout Primitives
+## 3. Declarative Markdown Syntax & Layout Primitives
 
-Import layout primitives from `slide-lib` (or provide them globally in
-`<MDXProvider>`):
+`<Deck>` automatically registers all built-in MDX components (`slideMdxComponents`), and `slideDeckPlugin()` compiles Slidev-inspired Markdown directives directly into semantic layout primitives:
 
 - **Accent Emphasis (`*italic*` / `<Em>`)**:
-  Standard markdown `*italic*` renders `<Em>`, placing the tilted terracotta
-  underline beneath the word (`# Every run, laid out in *time*`).
-- **`<ContextGrid variant="default" | "shot">`**:
-  2-column split with narrative copy / `<CodeCard>` on the left and a visual /
-  code comparison on the right.
-- **`<CapabilityMap cols={2 | 3 | 4 | 5}>` + `<CapabilityCard model="..." summary="..." />`**:
-  Multi-column comparison matrix with top ink rule and vertical dividers.
-- **`<ConceptGrid>` + `<ConceptCard label="..." title="..." summary="..." />`**:
-  2-column conceptual breakdown with uppercase monospace accent labels.
-- **`<SectionIndex items={[...]} activeIndex={0} />`**:
-  Numbered section agenda (`01`, `02`, ...) for `layout: "section"` divider
-  slides.
-- **`<CalloutStack>` + `<CalloutBox tag="..." title="..." variant="neutral" | "warning" | "success">`**:
-  Stacked callout cards.
-- **`<CodeCard label="filename.py" lang="python" code={`...`} />`**:
-  Shiki-highlighted code card that exports to `.pptx` as a native dark card
-  shape with editable syntax-colored text runs.
-- **`<SlideVisual label="Interactive trace">` (`data-pptx="raster"`)**:
-  Wrap bespoke interactive React/SVG widgets (`<TraceViewer>`,
-  `<CompletionSample>`, etc.) in `<SlideVisual>`. During `HTML -> PPTX` export,
-  the exporter captures `<SlideVisual>` as a crisp `@2x` transparent PNG island
-  while keeping all surrounding headings, labels, and paragraphs as native
-  editable PPTX text boxes.
+  Standard markdown `*italic*` renders `<Em>`, placing the tilted terracotta underline beneath the word (`# Every run, laid out in *time*`).
+- **2-Column Split (`::right::` or `::left` / `::right` -> `<ContextGrid>`)**:
+  Place `::right::` (or `::left{variant="shot"}` + `::right::`) between left and right column Markdown blocks.
+- **Multi-Column Grid (`:::grid` -> `<CapabilityMap>` + `<CapabilityCard>`)**:
+  Inside `:::grid` (optional `{cols=2..5}`, auto-inferred from card count), each `## Model Label` starts a card, `### Title` adds a heading, and paragraphs/lists form the body.
+- **Concept Breakdown (`:::concepts` -> `<ConceptGrid>` + `<ConceptCard>`)**:
+  Inside `:::concepts`, each `## Label` starts a 2-column concept card with uppercase monospace accent labels.
+- **Auto-Stacked Callouts (`:::callout[Tag]`, `:::warning[Tag]`, `:::success[Tag]` -> `<CalloutStack>` + `<CalloutBox>`)**:
+  Consecutive callout directives automatically stack; `### Heading` sets the callout title.
+- **Fenced Code Cards (` ```python title="file.py" ` -> `<CodeCard>`)**:
+  Standard fenced code blocks (with `title="..."` or `[file.py]`) render as Shiki-highlighted dark cards and export to `.pptx` as native shapes with editable syntax-colored text runs.
+- **Stats, Footers & Exhibits (`::stat[31M]{unit="+" caption="..."}`, `::footer[...]`, `:::visual[Label]`)**:
+  Lower to `<ScoreReveal>`, `<p className="slide-footer-note">`, and `<SlideVisual>` (`data-pptx="raster"` `@2x` PNG island).
 
 ---
 
