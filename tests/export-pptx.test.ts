@@ -11,6 +11,7 @@ import {
 	pxToInchesX,
 	pxToInchesY,
 	pxToPt,
+	readPptxArchive,
 	type ExtractedSlide,
 } from "../src/index.ts";
 
@@ -85,6 +86,10 @@ describe("Color and coordinate normalization for Google Slides / PowerPoint", ()
 		{
 			raw: "ui-sans-serif, system-ui, sans-serif",
 			expected: "Inter",
+		},
+		{
+			raw: '"Iowan Old Style", "Apple Garamond", "Baskerville", serif',
+			expected: "Georgia",
 		},
 	])("normalizes font stack $raw -> $expected", ({ raw, expected }) => {
 		expect(normalizeFontFamily(raw)).toEqual(expected);
@@ -232,6 +237,122 @@ describe("HTML -> PPTX builder from recorded Playwright DOM extraction fixtures"
 				{ text: "client", color: "CB7676" },
 				{ text: '"gemini-2.5-pro"', color: "98C379" },
 			],
+		});
+	});
+
+	test("expands shrink-to-fit centered boxes, emits explicit <a:lnSpc>, deduplicates multi-run <a:pPr>, and pushes down colliding vertical blocks", async () => {
+		const pptxBuf = await buildPptxBuffer({
+			title: "Collision & Centering Regression Test",
+			slides: [
+				{
+					slideNumber: 1,
+					title: "Kaggle Benchmarks",
+					layout: "center",
+					backgroundColor: "rgb(250, 248, 243)",
+					elements: [
+						{
+							kind: "text",
+							bbox: { x: 686.5, y: 457.6, w: 547.0, h: 76.2 },
+							align: "center",
+							lineHeightPx: 73.4,
+							role: "h1",
+							runs: [
+								{
+									text: "Kaggle ",
+									fontFamily: '"Newsreader", Georgia, serif',
+									fontSizePx: 68,
+									bold: false,
+									italic: false,
+									color: "rgb(55, 53, 47)",
+									isCode: false,
+								},
+								{
+									text: "Benchmarks",
+									fontFamily: '"Newsreader", Georgia, serif',
+									fontSizePx: 68,
+									bold: false,
+									italic: true,
+									color: "rgb(55, 53, 47)",
+									isCode: false,
+								},
+							],
+						},
+					],
+				},
+				{
+					slideNumber: 2,
+					title: "Overflow Pushdown",
+					layout: "default",
+					backgroundColor: "rgb(250, 248, 243)",
+					elements: [
+						{
+							kind: "text",
+							bbox: { x: 128, y: 270, w: 1664, h: 74 },
+							align: "left",
+							lineHeightPx: 73.4,
+							role: "h1",
+							runs: [
+								{
+									text: "We spent the last two months inspecting 65 industry benchmarks trace by trace across sixteen frontier models.",
+									fontFamily: '"Newsreader", Georgia, serif',
+									fontSizePx: 68,
+									bold: false,
+									italic: false,
+									color: "rgb(55, 53, 47)",
+									isCode: false,
+								},
+							],
+						},
+						{
+							kind: "text",
+							bbox: { x: 128, y: 360, w: 500, h: 40 },
+							align: "left",
+							lineHeightPx: 39.8,
+							role: "p",
+							runs: [
+								{
+									text: "The scores looked fine. The traces didn't.",
+									fontFamily: '"Newsreader", Georgia, serif',
+									fontSizePx: 28,
+									bold: false,
+									italic: false,
+									color: "rgb(111, 108, 100)",
+									isCode: false,
+								},
+							],
+						},
+					],
+				},
+			],
+		});
+
+		const zip = await JSZip.loadAsync(pptxBuf);
+		const slide1Xml = await zip.file("ppt/slides/slide1.xml")!.async("string");
+		const pPrCountInSlide1 = (slide1Xml.match(/<a:pPr\b/g) ?? []).length;
+		const hasLineSpacing = /<a:lnSpc><a:spcPts val="5510"\/><\/a:lnSpc>/.test(
+			slide1Xml,
+		);
+		const hasSerifPitchFamily =
+			/typeface="Newsreader" pitchFamily="18"/.test(slide1Xml);
+
+		const roundtripped = await readPptxArchive(pptxBuf);
+		const slide1Box = roundtripped[0].textBoxes[0];
+		const slide2SubtitleBox = roundtripped[1].textBoxes[1];
+
+		expect({
+			pPrCountInSlide1,
+			hasLineSpacing,
+			hasSerifPitchFamily,
+			slide1Align: slide1Box.align,
+			slide1WidthExpanded: slide1Box.bbox.w >= 1600,
+			slide2SubtitlePushedDown: slide2SubtitleBox.bbox.y > 410,
+		}).toEqual({
+			pPrCountInSlide1: 1,
+			hasLineSpacing: true,
+			hasSerifPitchFamily: true,
+			slide1Align: "center",
+			slide1WidthExpanded: true,
+			slide2SubtitlePushedDown: true,
 		});
 	});
 });

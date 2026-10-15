@@ -171,7 +171,9 @@ export async function readPptxArchive(
 
 			for (let pIdx = 0; pIdx < paragraphs.length; pIdx++) {
 				const p = paragraphs[pIdx];
-				const algnAttr = p?.["a:pPr"]?.["@_algn"];
+				const pPrRaw = p?.["a:pPr"];
+				const pPr = Array.isArray(pPrRaw) ? pPrRaw[0] : pPrRaw;
+				const algnAttr = pPr?.["@_algn"];
 				if (algnAttr === "ctr") align = "center";
 				else if (algnAttr === "r") align = "right";
 

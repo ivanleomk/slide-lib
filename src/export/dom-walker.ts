@@ -180,19 +180,80 @@ export function buildBrowserDomExtractorScript(): string {
 			}
 
 			if (runs.length > 0) {
+				const rawBox = relBox(rect);
+				const fontSizePx = Number.parseFloat(blockStyle.fontSize) || 24;
+				const lineHeightPx =
+					Number.parseFloat(blockStyle.lineHeight) ||
+					Math.round(fontSizePx * 1.3 * 10) / 10;
 				const align =
-					blockStyle.textAlign === "center"
+					blockStyle.textAlign === "center" ||
+					(layout === "center" && block.parentElement === stage)
 						? "center"
 						: blockStyle.textAlign === "right"
 							? "right"
 							: "left";
+				const parentEl = block.parentElement || stage;
+				const parentCs = window.getComputedStyle(parentEl);
+				const isHorizontalFlex =
+					parentCs.display.includes("flex") &&
+					!parentCs.flexDirection.startsWith("column");
+				const isMultiColGrid =
+					parentCs.display.includes("grid") &&
+					parentCs.gridTemplateColumns.trim().split(/\\s+/).length > 1;
+				const containerEl =
+					isHorizontalFlex || isMultiColGrid ? block : parentEl;
+				const containerCs = window.getComputedStyle(containerEl);
+				const containerRect = containerEl.getBoundingClientRect();
+				const padL =
+					containerEl === block
+						? 0
+						: Number.parseFloat(containerCs.paddingLeft) || 0;
+				const padR =
+					containerEl === block
+						? 0
+						: Number.parseFloat(containerCs.paddingRight) || 0;
+				const containerInnerLeft =
+					Math.round((containerRect.left - rootRect.left + padL) * 10) / 10;
+				const containerInnerRight =
+					Math.round((containerRect.right - rootRect.left - padR) * 10) / 10;
+				const isSingleLine = rawBox.h <= lineHeightPx * 1.5;
+
+				let finalX = rawBox.x;
+				let finalW = rawBox.w;
+				if (align === "center") {
+					const centerX = rawBox.x + rawBox.w / 2;
+					const maxHalfW = Math.max(
+						rawBox.w / 2,
+						Math.min(
+							centerX - containerInnerLeft,
+							containerInnerRight - centerX,
+						),
+					);
+					const maxSymW = Math.round(maxHalfW * 2 * 10) / 10;
+					finalW = isSingleLine
+						? maxSymW
+						: Math.min(maxSymW, Math.round(rawBox.w * 1.12 * 10) / 10);
+					finalX = Math.round((centerX - finalW / 2) * 10) / 10;
+				} else if (align === "left") {
+					const maxRightW = Math.max(
+						rawBox.w,
+						Math.round((containerInnerRight - rawBox.x) * 10) / 10,
+					);
+					finalW = isSingleLine
+						? maxRightW
+						: Math.min(maxRightW, Math.round(rawBox.w * 1.08 * 10) / 10);
+				}
+
 				elements.push({
 					kind: "text",
-					bbox: relBox(rect),
+					bbox: {
+						x: finalX,
+						y: rawBox.y,
+						w: finalW,
+						h: rawBox.h,
+					},
 					align,
-					lineHeightPx:
-						Number.parseFloat(blockStyle.lineHeight) ||
-						(Number.parseFloat(blockStyle.fontSize) || 24) * 1.3,
+					lineHeightPx,
 					runs,
 					role: block.getAttribute("data-pptx-role") || block.tagName.toLowerCase(),
 				});
@@ -200,27 +261,33 @@ export function buildBrowserDomExtractorScript(): string {
 
 			const emNodes = Array.from(block.querySelectorAll("em.em, span.em, [data-pptx-em='true']"));
 			for (const em of emNodes) {
-				const emRect = em.getBoundingClientRect();
-				if (emRect.width < 2) continue;
-				const barHeight = Math.max(3, Math.round(emRect.height * 0.09 * 10) / 10);
-				const emRel = relBox(emRect);
+				const clientRects = Array.from(em.getClientRects()).filter(
+					(r) => r.width >= 2 && r.height >= 2,
+				);
+				const rectsToUse =
+					clientRects.length > 0 ? clientRects : [em.getBoundingClientRect()];
 				const accentVar =
 					window.getComputedStyle(stage).getPropertyValue("--accent").trim() || "#b5522f";
-				elements.push({
-					kind: "shape",
-					bbox: {
-						x: emRel.x,
-						y: Math.round((emRel.y + emRel.h - barHeight) * 10) / 10,
-						w: emRel.w,
-						h: barHeight,
-					},
-					fillColor: accentVar,
-					borderColor: null,
-					borderWidthPx: 0,
-					borderRadiusPx: 2,
-					rotateDeg: -0.8,
-					role: "em-underline",
-				});
+				for (const emRect of rectsToUse) {
+					if (emRect.width < 2) continue;
+					const barHeight = Math.max(3, Math.round(emRect.height * 0.08 * 10) / 10);
+					const emRel = relBox(emRect);
+					elements.push({
+						kind: "shape",
+						bbox: {
+							x: emRel.x,
+							y: Math.round((emRel.y + emRel.h - barHeight * 0.3) * 10) / 10,
+							w: emRel.w,
+							h: barHeight,
+						},
+						fillColor: accentVar,
+						borderColor: null,
+						borderWidthPx: 0,
+						borderRadiusPx: 2,
+						rotateDeg: -0.8,
+						role: "em-underline",
+					});
+				}
 			}
 		}
 

@@ -35,22 +35,39 @@ export function normalizeCssColor(
 }
 
 export function normalizeFontFamily(cssFontFamily: string): string {
-	const first = cssFontFamily.split(",")[0]?.trim().replace(/^['"]|['"]$/g, "");
+	const parts = cssFontFamily
+		.split(",")
+		.map((part) => part.trim().replace(/^['"]|['"]$/g, ""))
+		.filter(Boolean);
+	const first = parts[0];
 	if (!first) return "Newsreader";
 	if (
 		first.includes("Mono") ||
 		first.includes("Consolas") ||
 		first.includes("Menlo") ||
-		first === "ui-monospace"
+		first === "ui-monospace" ||
+		first === "monospace"
 	) {
 		return "JetBrains Mono";
 	}
 	if (
 		first === "ui-sans-serif" ||
 		first === "system-ui" ||
-		first === "-apple-system"
+		first === "-apple-system" ||
+		first === "BlinkMacSystemFont" ||
+		first === "sans-serif"
 	) {
 		return "Inter";
+	}
+	if (
+		first === "Iowan Old Style" ||
+		first === "Apple Garamond" ||
+		first === "Baskerville" ||
+		first === "Tiempos Text" ||
+		first === "ui-serif" ||
+		first === "serif"
+	) {
+		return "Georgia";
 	}
 	return first;
 }
