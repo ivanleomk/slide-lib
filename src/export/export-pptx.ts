@@ -173,6 +173,22 @@ export async function exportDeckToPptx(
 		concurrency: config.concurrency,
 		slideCount: config.slideCount,
 	});
+	for (const slide of deck.slides) {
+		for (const el of slide.elements) {
+			if (el.kind === "image" && !el.src.startsWith("data:")) {
+				try {
+					const res = await fetch(el.src);
+					if (res.ok) {
+						const buf = Buffer.from(await res.arrayBuffer());
+						const mime = res.headers.get("content-type") || "image/jpeg";
+						el.src = `data:${mime};base64,${buf.toString("base64")}`;
+					}
+				} catch {
+					// ignore fetch errors
+				}
+			}
+		}
+	}
 	const buffer = await buildPptxBuffer(deck);
 	fs.writeFileSync(config.outPath, buffer);
 	return deck;
